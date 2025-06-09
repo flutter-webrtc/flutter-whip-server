@@ -1,4 +1,4 @@
-# WebRTC-HTTP ingestion protocol (WHIP) for Go
+# Demo Server for flutter whip.
 
 * Support WebRTC to RTMP.
 * One to many broadcast.
@@ -10,7 +10,7 @@ Run example:
 ### one2many
 
 ```bash
-git clone https://github.com/rtcd/whip.git
+git clone https://github.com/flutter-webrtc/flutter-whip-server.git
 cd whip
 go run examples/one2many/main.go
 ```
@@ -22,7 +22,7 @@ open <http://127.0.0.1:8080/>, Then you can run a publish, multiple subscribe pa
 note: need to install gstreamer
 
 ```bash
-git clone https://github.com/rtcd/whip.git
+git clone https://github.com/flutter-webrtc/flutter-whip-server.git
 cd whip
 # please ensure gstreamer is installed
 # export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig # for mac only
