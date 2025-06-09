@@ -106,7 +106,7 @@ func NewWHIPConn() (*WHIPConn, error) {
 
 	for _, codec := range []webrtc.RTPCodecParameters{
 		{
-			RTPCodecCapability: webrtc.RTPCodecCapability{MimeType: mineTypePCMA, ClockRate: 8000},
+			RTPCodecCapability: webrtc.RTPCodecCapability{MimeType: mineTypePCMA, ClockRate: 8000, Channels: 1, RTCPFeedback: nil},
 			PayloadType:        8,
 		},
 		{
@@ -123,12 +123,16 @@ func NewWHIPConn() (*WHIPConn, error) {
 
 	for _, codec := range []webrtc.RTPCodecParameters{
 		{
-			RTPCodecCapability: webrtc.RTPCodecCapability{MimeType: mimeTypeVP8, ClockRate: 90000, RTCPFeedback: videoRTCPFeedback},
+			RTPCodecCapability: webrtc.RTPCodecCapability{MimeType: mimeTypeH264, ClockRate: 90000, SDPFmtpLine: "level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42001f", RTCPFeedback: videoRTCPFeedback},
+			PayloadType:        102,
+		},
+		{
+			RTPCodecCapability: webrtc.RTPCodecCapability{MimeType: webrtc.MimeTypeVP8, ClockRate: 90000},
 			PayloadType:        96,
 		},
 		{
-			RTPCodecCapability: webrtc.RTPCodecCapability{MimeType: mimeTypeH264, ClockRate: 90000, SDPFmtpLine: "level-asymmetry-allowed=1;packetization-mode=1;profile-level-id=42001f", RTCPFeedback: videoRTCPFeedback},
-			PayloadType:        102,
+			RTPCodecCapability: webrtc.RTPCodecCapability{MimeType: webrtc.MimeTypeVP9, ClockRate: 90000},
+			PayloadType:        97,
 		},
 	} {
 		if err := m.RegisterCodec(codec, webrtc.RTPCodecTypeVideo); err != nil {
