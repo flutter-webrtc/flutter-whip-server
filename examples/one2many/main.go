@@ -11,12 +11,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/rtcd/whip/pkg/util"
+	"github.com/flutter-webrtc/flutter-whip-server/pkg/util"
 
+	"github.com/flutter-webrtc/flutter-whip-server/pkg/whip"
 	"github.com/gorilla/mux"
 	"github.com/pion/rtcp"
 	"github.com/pion/webrtc/v3"
-	"github.com/rtcd/whip/pkg/whip"
 	"github.com/spf13/viper"
 )
 
