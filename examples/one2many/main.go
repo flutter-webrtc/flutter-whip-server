@@ -349,10 +349,9 @@ func main() {
 	r.HandleFunc("/whip/list", func(w http.ResponseWriter, r *http.Request) {
 		listLock.Lock()
 		defer listLock.Unlock()
-		var list []map[string]interface{}
+		list := make([]map[string]interface{}, 0)
 		for key, item := range conns {
 			details := make(map[string]interface{})
-
 			connType := "publish"
 			if !item.publish {
 				connType = "subscribe"
