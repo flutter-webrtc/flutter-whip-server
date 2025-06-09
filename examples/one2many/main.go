@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -151,7 +152,7 @@ func main() {
 
 	r := mux.NewRouter()
 
-	r.HandleFunc("/whip/{mode}/{room}/{stream}", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/whip/{mode}/{room}/{streamId}", func(w http.ResponseWriter, r *http.Request) {
 		// Set CORS headers
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
@@ -159,7 +160,7 @@ func main() {
 
 		vars := mux.Vars(r)
 		roomId := vars["room"]
-		streamId := vars["stream"]
+		streamId := vars["streamId"]
 		mode := vars["mode"]
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
@@ -251,7 +252,7 @@ func main() {
 				}
 			}
 			if !foundPublish {
-				w.WriteHeader(http.StatusInternalServerError)
+				w.WriteHeader(http.StatusNotFound)
 				msg := fmt.Sprintf("Not find any publisher for room: %v, stream: %v", roomId, streamId)
 				log.Print(msg)
 				w.Write([]byte(msg))
@@ -297,18 +298,18 @@ func main() {
 		printWhipState()
 	}).Methods("POST")
 
-	r.HandleFunc("/whip/{room}/{stream}", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/whip/{room}/{resourceId}", func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		roomId := vars["room"]
-		streamId := vars["stream"]
-		body, err := ioutil.ReadAll(r.Body)
+		resourceId := vars["resourceId"]
+		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			panic(err)
 		}
-		log.Printf("Patch: roomId => %v, streamId => %v, body = %v", roomId, streamId, string(body))
+		log.Printf("Patch: roomId => %v, resourceId => %v, body = %v", roomId, resourceId, string(body))
 		listLock.Lock()
 		defer listLock.Unlock()
-		if state, found := conns[streamId]; found {
+		if state, found := conns[resourceId]; found {
 			mid := "0"
 			index := uint16(0)
 			state.whipConn.AddICECandidate(webrtc.ICECandidateInit{Candidate: string(body), SDPMid: &mid, SDPMLineIndex: &index})
@@ -317,33 +318,33 @@ func main() {
 		}
 	}).Methods("PATCH")
 
-	r.HandleFunc("/whip/{room}/{stream}", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/whip/{room}/{resourceId}", func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		roomId := vars["room"]
-		streamId := vars["stream"]
+		resourceId := vars["stream"]
 
-		log.Printf("Delete: roomId => %v, streamId => %v", roomId, streamId)
+		log.Printf("Delete: roomId => %v, resourceId => %v", roomId, resourceId)
 
 		listLock.Lock()
 		defer listLock.Unlock()
-		if state, found := conns[streamId]; found {
+		if state, found := conns[resourceId]; found {
 			state.whipConn.Close()
-			delete(conns, streamId)
-			streamType := "publish"
+			delete(conns, resourceId)
+			connType := "publish"
 			if !state.publish {
-				streamType = "subscribe"
+				connType = "subscribe"
 			}
-			log.Printf("%v stream conn removed  %v", streamType, streamId)
+			log.Printf("%v stream conn removed  %v", connType, resourceId)
 			printWhipState()
 		} else {
-			w.WriteHeader(http.StatusInternalServerError)
-			msg := "stream " + streamId + " not found"
+			w.WriteHeader(http.StatusNotFound)
+			msg := "resource " + resourceId + " not found"
 			log.Print(msg)
 			w.Write([]byte(msg))
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(streamId + " deleted"))
+		w.Write([]byte(resourceId + " deleted"))
 	}).Methods("DELETE")
 
 	r.HandleFunc("/whip/list", func(w http.ResponseWriter, r *http.Request) {
