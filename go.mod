@@ -1,4 +1,4 @@
-module github.com/rtcd/whip
+module github.com/flutter-webrtc/flutter-whip-server
 
 go 1.16
 

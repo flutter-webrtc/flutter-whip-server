@@ -4,7 +4,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/rtcd/whip/pkg/util"
 	"io/ioutil"
 	"log"
 	"net"
@@ -14,13 +13,15 @@ import (
 	"sync"
 	"time"
 
+	"github.com/flutter-webrtc/flutter-whip-server/pkg/util"
+
+	"github.com/flutter-webrtc/flutter-whip-server/internal/gst-sink"
+	gst_sink "github.com/flutter-webrtc/flutter-whip-server/internal/gst-sink"
+	"github.com/flutter-webrtc/flutter-whip-server/pkg/whip"
 	"github.com/gorilla/mux"
 	"github.com/mdp/qrterminal/v3"
 	"github.com/pion/rtcp"
 	"github.com/pion/webrtc/v3"
-	"github.com/rtcd/whip/internal/gst-sink"
-	gst_sink "github.com/rtcd/whip/internal/gst-sink"
-	"github.com/rtcd/whip/pkg/whip"
 )
 
 var (

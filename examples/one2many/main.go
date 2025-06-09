@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/rtcd/whip/pkg/util"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -12,10 +11,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/flutter-webrtc/flutter-whip-server/pkg/util"
+
+	"github.com/flutter-webrtc/flutter-whip-server/pkg/whip"
 	"github.com/gorilla/mux"
 	"github.com/pion/rtcp"
 	"github.com/pion/webrtc/v3"
-	"github.com/rtcd/whip/pkg/whip"
 	"github.com/spf13/viper"
 )
 
@@ -40,13 +41,31 @@ func addTrack(w *whipState, t *webrtc.TrackRemote) *webrtc.TrackLocalStaticRTP {
 		listLock.Unlock()
 	}()
 
+	trackId := t.ID()
+	if trackId == "" {
+		// If the track ID is empty, generate a new one
+		trackId = util.RandomString(12)
+		log.Printf("Track ID is empty, generated new one: %v", trackId)
+	} else {
+		log.Printf("Track ID is: %v", trackId)
+	}
+
+	streamId := t.StreamID()
+	if streamId == "" {
+		// If the stream ID is empty, generate a new one
+		streamId = "whip-stream"
+		log.Printf("Stream ID is empty, generated new one: %v", streamId)
+	} else {
+		log.Printf("Stream ID is: %v", streamId)
+	}
+
 	// Create a new TrackLocal with the same codec as our incoming
-	trackLocal, err := webrtc.NewTrackLocalStaticRTP(t.Codec().RTPCodecCapability, t.ID(), t.StreamID())
+	trackLocal, err := webrtc.NewTrackLocalStaticRTP(t.Codec().RTPCodecCapability, trackId, streamId)
 	if err != nil {
 		panic(err)
 	}
 
-	w.pubTracks[t.ID()] = trackLocal
+	w.pubTracks[trackId] = trackLocal
 	return trackLocal
 }
 
@@ -133,6 +152,11 @@ func main() {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/whip/{mode}/{room}/{stream}", func(w http.ResponseWriter, r *http.Request) {
+		// Set CORS headers
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
 		vars := mux.Vars(r)
 		roomId := vars["room"]
 		streamId := vars["stream"]
